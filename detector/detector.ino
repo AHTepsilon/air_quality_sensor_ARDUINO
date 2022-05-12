@@ -1,5 +1,6 @@
-#include <LiquidCrystal.h>
-
+#include <LiquidCrystal_I2C.h>
+#include <MQ135.h>
+#include <Wire.h>
 // C++ code
 //
 
@@ -14,19 +15,12 @@
 
 #define CO2sensor A0
 
-LiquidCrystal lcd(12, 11, 7, 6, 5, 4);
+LiquidCrystal_I2C lcd(0x27, 2, 1, 0, 4, 5, 6, 7, 3, POSITIVE);
+MQ135 gasSensor = MQ135(CO2sensor);
 
 void setup()
 {
   pinMode(LED_BUILTIN, OUTPUT);
-  
-  /*pinMode(LCDRS, OUTPUT);
-  pinMode(LCDE, OUTPUT);
-  pinMode(LCDDB0, OUTPUT);
-  pinMode(LCDDB1, OUTPUT);
-  pinMode(LCDDB2, OUTPUT);
-  pinMode(LCDDB3, OUTPUT);
-  pinMode(LCDDB4, OUTPUT);*/
   
   lcd.begin(16, 2);
   
@@ -40,35 +34,37 @@ void loop()
   delay(1000); // Wait for 1000 millisecond(s)
   digitalWrite(LED_BUILTIN, LOW);
   delay(1000); // Wait for 1000 millisecond(s)*/
-  
-  int co2SensorData;
-  co2SensorData = analogRead(CO2sensor);
-  
-  Serial.println(co2SensorData);
+
+  float ppm = gasSensor.getPPM();
+  float resultShow = ppm/10;
+
+  Serial.println(resultShow);
   
   lcd.setCursor(00,00);
   lcd.print("NIVEL DE CO2");
   lcd.setCursor(00,01);
-  lcd.print(co2SensorData);
+  lcd.print(resultShow);
+  lcd.setCursor(05, 01);
+  lcd.print("ppm");
   
-  if(co2SensorData <= 500){
+  if(resultShow <= 800){
   
-    lcd.setCursor(06, 01);
-    lcd.print("BAJ CO2");
+    lcd.setCursor(10, 01);
+    lcd.print("LO CO2");
     
   }
   
-  else if(co2SensorData > 500 && co2SensorData < 700){
+  else if(resultShow > 800 && resultShow < 1200){
   
-    lcd.setCursor(06, 01);
-    lcd.print("MED CO2");
+    lcd.setCursor(10, 01);
+    lcd.print("MD CO2");
     
   }
   
-  else if(co2SensorData >= 700){
+  else if(resultShow >= 1200){
   
-    lcd.setCursor(06, 01);
-    lcd.print("ALT CO2");
+    lcd.setCursor(10, 01);
+    lcd.print("HI CO2");
     
   }
 
